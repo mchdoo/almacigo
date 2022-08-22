@@ -1,20 +1,38 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { 
+  StyleSheet, 
+  Text, 
+  TouchableOpacity, 
+  View 
+} from 'react-native';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+import {useFonts} from 'expo-font'
+import {NavigationContainer, DefaultTheme} from '@react-navigation/native'
+
+import Screens from './nodes/Screens'
+import Error from './components/Error';
+
+
+const MyTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: 'transparent',
+  }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default function App() {
+  
+  const [fontsLoaded] = useFonts({
+    'inter': require('./assets/fonts/Inter-Regular.ttf'),
+    'inter-bold': require('./assets/fonts/Inter-Bold.ttf'),
+    'inter-med': require('./assets/fonts/Inter-Medium.ttf'),
+  })
+
+  if (fontsLoaded) return (
+    <NavigationContainer theme={MyTheme}>
+      <Screens/>
+      <StatusBar style="auto" />
+    </NavigationContainer>
+  );
+}
