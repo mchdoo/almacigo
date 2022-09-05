@@ -1,9 +1,12 @@
 import React from "react"
-import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { createNativeStackNavigator, } from '@react-navigation/native-stack'
 import HomeScreen from "../screens/HomeScreen"
 import BandejaScreen from "../screens/BandejaScreen"
 import AddBandejaScreen from "../screens/AddBandejaScreen"
-import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { enableFreeze } from "react-native-screens"
+import { theme } from '../styles/globals'
+
+enableFreeze(true)
 
 type StackParams = {
   Home: undefined,
@@ -13,53 +16,58 @@ type StackParams = {
   AddBandeja: undefined
 }
 
-const Stack = createNativeStackNavigator<StackParams>()
+const MainStack = createNativeStackNavigator<StackParams>()
 
 export default function Screens() {
 
   return (
-    <Stack.Navigator initialRouteName='Home' screenOptions={{
+    <MainStack.Navigator initialRouteName='Home' screenOptions={{
       headerShadowVisible: false,
+      headerBlurEffect: "dark",
       headerTitleStyle: {
         fontFamily: 'inter-med',
-        fontSize: 16
+        fontSize: 16,
+        color: theme.foreground,
       },
-      animation: 'slide_from_right',
-      animationDuration: 10,
     }}>
+      <MainStack.Group screenOptions={{
+        animation: 'slide_from_right',
+        animationDuration: 10,
+      }}>
+        <MainStack.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{
+            title: 'Inicio'
+          }}
+        />
 
-      <Stack.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{
-          title: null
-        }}
-      />
-
-      <Stack.Screen
-        name="Bandeja"
-        component={BandejaScreen}
-        options={({ route }) => (
-          {
-            // @ts-ignore
-            title: `Bandeja # ${route.params.bandejaId}`,
+        <MainStack.Screen
+          name="Bandeja"
+          component={BandejaScreen}
+          options={({ route }) => (
+            {
+              // @ts-ignore
+              title: null,
+            }
+          )}
+        />
+        <MainStack.Screen
+          name='AddBandeja'
+          component={AddBandejaScreen}
+          options={
+            {
+              animation: 'slide_from_bottom',
+              title: null,
+            }
           }
-        )}
-      />
+        />
 
-      <Stack.Screen
-        name='AddBandeja'
-        component={AddBandejaScreen}
-        options={
-          {
-            title: null,
-            presentation: 'fullScreenModal',
-            animation: 'slide_from_bottom',
-            headerShown: false,
-          }
-        }
-      />
+      </MainStack.Group>
 
-    </Stack.Navigator>
+      <MainStack.Group screenOptions={{ headerShown: false, gestureEnabled: true, presentation: 'transparentModal' }}>
+      </MainStack.Group>
+
+    </MainStack.Navigator>
   )
 }

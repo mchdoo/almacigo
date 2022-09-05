@@ -1,18 +1,32 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import {Ionicons} from '@expo/vector-icons'
+import { Ionicons } from '@expo/vector-icons'
 import { globalStyles, theme } from "../styles/globals";
 import IconButton from "./IconButton";
 
-export default function SectionTitle({title = null, children = null, icon='layers-outline', top = 0, onRefresh=null}){
+interface Props {
+    title?: string,
+    children?,
+    sideIcon?: string,
+    top?: number,
+    onSideIconPress: any
+}
+
+export default function SectionTitle({
+    title = null,
+    children = null,
+    sideIcon = null,
+    top = 0,
+    onSideIconPress = () => { }
+}: Props) {
 
     return (
-        <View style={[styles.sectionTitle, {marginTop: top ? top : 0}]}>
+        <View style={[styles.sectionTitle, { marginTop: top ? top : 0 }]}>
             {title && <Text style={globalStyles.sectionTitle}>{title}</Text>}
             {children ? children : null}
             <View style={globalStyles.row}>
-                {/* @ts-ignore: Es solo un ícono. */ }
-                {onRefresh && <IconButton color={theme.primary} icon='refresh'/>}
+                {/* @ts-ignore: Es solo un ícono. */}
+                {sideIcon && <IconButton color={theme.primary} onPress={onSideIconPress} icon={sideIcon} />}
             </View>
         </View>
     )

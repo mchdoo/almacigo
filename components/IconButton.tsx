@@ -1,9 +1,10 @@
 import { TouchableOpacity, StyleSheet } from 'react-native'
 import React from 'react'
-import {Ionicons} from '@expo/vector-icons'
+import { Ionicons } from '@expo/vector-icons'
+import { theme } from '../styles/globals'
 
-const IconButton = ({icon, size = 25, color='black', style={}, onPress= () => {}, filled = false}) => {
-  
+const IconButton = ({ icon, size = 25, color = theme.foreground, style = {}, onPress = () => { }, filled = false }) => {
+
   const styles = {
     fill: {
       backgroundColor: color,
@@ -14,11 +15,11 @@ const IconButton = ({icon, size = 25, color='black', style={}, onPress= () => {}
       alignItems: 'center',
     }
   }
-  
-  return ( 
+
+  return (
     /* @ts-ignore */
-    <TouchableOpacity style={filled ? styles.fill : {}} onPress={onPress}>
-        <Ionicons name={icon} size={size} color={filled ? 'white' : color} style={style}  />
+    <TouchableOpacity style={[filled ? styles.fill : {}, style]} onPress={onPress}>
+      <Ionicons name={icon} size={size} color={filled ? 'white' : color} />
     </TouchableOpacity>
   )
 }

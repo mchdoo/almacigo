@@ -1,20 +1,22 @@
-import React, {useState} from 'react'
-import { StyleSheet, Text, KeyboardAvoidingView, View, StatusBar, Dimensions, Platform } from 'react-native'
+import React, { useState } from 'react'
+import { StyleSheet, Text, KeyboardAvoidingView, View, StatusBar, Dimensions, Platform, Pressable } from 'react-native'
 import { globalStyles, theme } from '../styles/globals'
 import { Formik } from 'formik'
-import {Ionicons} from '@expo/vector-icons'
+import { Ionicons } from '@expo/vector-icons'
 import axios from 'axios'
 import * as yup from 'yup'
+import { BlurView } from 'expo-blur'
 
 import Button from '../components/Button'
 import Input from '../components/Input'
-import IconButton from '../components/IconButton'
+import Error from '../components/Error'
+import BottomSheetModal from '../components/BottomSheetModal'
 
-function Spacer({space = 10}) {
-  return <View style={{width: space, aspectRatio: 1}}/>
+function Spacer({ space = 10 }) {
+  return <View style={{ width: space, aspectRatio: 1 }} />
 }
 
-const {width} = Dimensions.get('screen')
+const { width } = Dimensions.get('screen')
 
 const bandejaSchema = yup.object({
   identificador: yup.string()
@@ -24,68 +26,67 @@ const bandejaSchema = yup.object({
   columnas: yup.string().max(3, 'No más de 3 digitos!').min(1, 'Mínimo un numero!'),
 })
 
-const AddBandejaScreen = ({navigation}) => {
-  
+const AddBandejaScreen = ({ navigation }) => {
+
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = useState()
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={[globalStyles.container, {marginTop: StatusBar.currentHeight}]}>
-      <View style={{justifyContent: 'center', alignItems: 'center', height: 50, width: '100%'}}>
-        <IconButton onPress={() => navigation.goBack()} color='gray' icon='chevron-down'/>
-      </View>
+    <View style={globalStyles.container}>
       <View style={globalStyles.row}>
         <Ionicons name='file-tray-stacked-outline' size={35} color={theme.primary} />
-        <Spacer/>
+        <Spacer />
         <Text style={globalStyles.title}>Añadir Bandeja</Text>
       </View>
       <Spacer />
       <Formik
-        initialValues={{identificador: '', filas: 8, columnas: 16, capac_maceta: 6}}
+        initialValues={{ identificador: '', filas: 8, columnas: 16, capac_maceta: 6 }}
         validationSchema={bandejaSchema}
         onSubmit={(values, actions) => {
           setLoading(true)
           actions.resetForm()
           axios
             .post('http://192.168.1.20:1337/bandejas', {
-                identificador: values.identificador.toUpperCase(),
-                filas: values.filas,
-                columnas: values.columnas,
-                capac_maceta: values.capac_maceta
+              identificador: values.identificador.toUpperCase(),
+              filas: values.filas,
+              columnas: values.columnas,
+              capac_maceta: values.capac_maceta
             })
             .then((res) => {
-                setLoading(false)
-                navigation.goBack()
+              setLoading(false)
+              navigation.goBack()
             })
             .catch(err => {
-                setLoading(false)
-                setError(err)
+              setLoading(false)
+              setError(err.message)
             })
         }}>
 
         {(props) => (
           <View>
             <Input required error={props.errors.identificador} label='Identificador' placeholder='Ej: PM-C' onChangeText={props.handleChange('identificador')} value={props.values.identificador} />
-            <Spacer/>
+            <Spacer />
             <View style={styles.flex}>
               <View style={styles.item}>
                 <Input numeric error={props.errors.columnas} label='Columnas' placeholder='Por defecto: 16' onChangeText={props.handleChange('columnas')} value={props.values.columnas} />
-              </View> 
-              <Spacer/>
+              </View>
+              <Spacer />
               <View style={styles.item}>
                 <Input numeric error={props.errors.filas} label='Filas' placeholder='Por defecto: 8' onChangeText={props.handleChange('filas')} value={props.values.filas} />
               </View>
             </View>
             <Spacer />
             <Input numeric label='Capacidad de maceta' placeholder='Por defecto: 6' onChangeText={props.handleChange('capac_maceta')} value={props.values.capac_maceta} />
-            <Spacer space={15}/>
-            <Button color={theme.primary} text='Añadir' icon='cloud-done' onPress={props.handleSubmit} iconSize={20} loading={loading} />
+            <Spacer space={20} />
+            <View>
+              <Button color={theme.primary} text='Añadir' icon='arrow-forward' onPress={props.handleSubmit} iconSize={20} loading={loading} />
+            </View>
           </View>
         )}
       </Formik>
-    </KeyboardAvoidingView>
+    </View>
   )
-  
+
 }
 
 const styles = StyleSheet.create({

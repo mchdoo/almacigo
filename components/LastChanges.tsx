@@ -1,10 +1,10 @@
 import React from "react";
 import { View, Text } from "react-native";
 import SectionTitle from "./SectionTitle";
-import {Ionicons} from '@expo/vector-icons'
+import { Ionicons } from '@expo/vector-icons'
 import { globalStyles } from "../styles/globals";
 
-export default function LastChanges({children = null}) {
+export default function LastChanges({ children = null }) {
 
     const iconSize = 25
 
@@ -20,11 +20,11 @@ export default function LastChanges({children = null}) {
                         fontSize: 18,
                         fontFamily: 'inter-med',
                         marginLeft: 5
-                    }}>Ultimos movimientos</Text>
+                    }}>Últimos movimientos</Text>
                 </View>
             </SectionTitle>
-            <View style={[globalStyles.row, {opacity: 0.5}]}>
-                <Ionicons name='return-down-forward-sharp' size={iconSize} style={{marginRight: 5, transform: [{scale: 0.7}]}} />
+            <View style={[globalStyles.row, { opacity: 0.5 }]}>
+                <Ionicons name='return-down-forward-sharp' size={iconSize} style={{ marginRight: 5, transform: [{ scale: 0.7 }] }} />
                 {children}
             </View>
         </View>

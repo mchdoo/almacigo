@@ -1,3 +1,5 @@
+const {graphql, buildSchema} = require('graphql')
+
 export type Bandeja = {
     id: number,
     identificador: string,

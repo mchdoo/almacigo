@@ -1,6 +1,6 @@
 import React from "react"
-import {View, Text, StyleSheet, Dimensions, RefreshControl, TouchableOpacity} from 'react-native'
-import {Ionicons} from '@expo/vector-icons'
+import { View, Text, StyleSheet, Dimensions, RefreshControl, TouchableOpacity, ScrollView, FlatList, Modal, SafeAreaView } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
 import useFetch from "../hooks/useFetch"
 import { globalStyles, theme } from "../styles/globals"
 import Error from "../components/Error"
@@ -8,74 +8,78 @@ import AnimatedLottieView from "lottie-react-native";
 import IconButton from "../components/IconButton"
 import axios from 'axios'
 import useRefresh from "../hooks/useRefresh"
-import {FlatGrid} from 'react-native-super-grid'
 import type { Bandeja } from "../models"
+import Loader from "../components/Loader"
+import { Skeleton } from 'moti/skeleton'
+import AltaSemilla from "../components/AltaSemilla"
+import SemillaButton from "../components/SemillaButton"
+import { useQuery, gql } from "@apollo/client"
+import Button from "../components/Button"
+
+const BANDEJA = gql`
+        query getBandeja($id: ID!) {
+            bandeja(id: $id) {
+                id,
+                identificador,
+                filas,
+                columnas,
+                created_at,
+                updated_at
+            }
+        }
+    `
 
 
-export default function BandejaScreen({navigation, route}) {
+export default function BandejaScreen({ navigation, route }) {
+    const { bandejaId } = route.params
 
-    const {bandejaId} = route.params
 
-    const [deleteError, setDeleteError] = React.useState()
-    const {refreshing, handleRefresh} = useRefresh()
+    const { loading, error, data } = useQuery(BANDEJA, {
+        variables: { id: bandejaId }
+    })
 
-    const {data, error, isLoading} = useFetch(`/${bandejaId}`, refreshing)
-    const bandeja: Bandeja = data
-
-    function handleDelete() {
-        axios.delete(`http://192.168.1.20:1337/bandejas/${bandejaId}`).then(navigation.goBack()).catch(err => setDeleteError(error))
-    }
+    const [altaSemillaVisible, toggleAltaSemilla] = React.useState(false)
+    const [selectionMode, setSelectionMode] = React.useState(false)
 
     React.useLayoutEffect(() => {
         navigation.setOptions({
             headerRight: () => (
                 <>
-                    <IconButton icon="options-outline" style={{marginRight: 10}} size={25} />
-                    <IconButton icon="trash-outline" size={25} color='red' onPress={handleDelete} />
+                    <IconButton icon="ellipsis-vertical" style={{ marginRight: 10 }} size={25} />
                 </>
-            )
+            ),
         })
     }, [navigation])
 
-    const length = bandeja?.filas * bandeja?.columnas
+    const length = data?.bandeja.filas * data?.bandeja.columnas
 
-    const range = Array.from({length: length}, (_, v) => v)
+    const range = Array.from({ length: length }, (_, v) => v)
 
-    return !isLoading ? (
-        <View /*refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}*/ style={globalStyles.container}>
+    const smallestDimesion = data?.bandeja.columnas < data?.bandeja.filas ? data?.bandeja.columnas : data?.bandeja.filas
+
+    return (
+        <SafeAreaView /*refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}*/ style={globalStyles.container}>
             {error && <Error error={error} />}
-            {deleteError && <Error error={deleteError}/>}
-            {bandeja && (
-                <>
-                    <View style={globalStyles.row}>
-                        <Ionicons color={theme.primary} name="cube" size={40} />
-                        <Text style={[globalStyles.title, {marginHorizontal: 5}]}>{bandeja.identificador} </Text>
-                    </View>
-                    <View style={[globalStyles.row, {marginBottom: 10, padding: 2.5, marginLeft: -5}]}>
-                        <Text style={styles.info}>Creada el {bandeja.created_at.slice(0, 10)}</Text>
-                        <Text style={styles.info}>{bandeja.columnas} columnas</Text>
-                        <Text style={styles.info}>{bandeja.filas} filas</Text>
-                    </View>
-
-                    <FlatGrid
-                        data={range}
-                        style={{backgroundColor: theme.dimmed, borderRadius: 5, marginBottom: 20}}
-                        itemDimension={60}
-                        showsVerticalScrollIndicator={false}
-                        spacing={5}
-                        renderItem={({item}) => (
-                            <TouchableOpacity>
-                                <Text style={{backgroundColor: theme.primary, aspectRatio: 1, padding: 10, color: 'white', borderRadius: 5,fontFamily: 'inter-bold'}}>/{item}</Text>
-                            </TouchableOpacity>
-                        )}
-                    />
-                </>
-            )}
-        </View>
-    ) : (
-        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-            <AnimatedLottieView source={require('../assets/animations/loading.json')} autoPlay style={{width: 50, height: 50}} />
-        </View>
+            <View style={[globalStyles.row, { marginBottom: 10 }]}>
+                <Ionicons color={theme.primary} style={{ marginRight: 5 }} name="cube" size={40} />
+                <Skeleton colorMode='light' height={40} width={100}>
+                    {data ? <Text style={globalStyles.title}>{data.bandeja?.identificador}</Text> : null}
+                </Skeleton>
+            </View>
+            <Skeleton colorMode="light" height={30} width='100%' >
+                {data ?
+                    <View style={[globalStyles.row, { flexWrap: 'wrap' }]}>
+                        <Text style={styles.info}>Creada {data.bandeja.created_at.slice(2, 10)}</Text>
+                        <Text style={styles.info}>Actualizada {data.bandeja.updated_at.slice(2, 10)}</Text>
+                    </View> : null
+                }
+            </Skeleton>
+            <Button text="Agregar semilla" style={{ marginTop: 15 }} />
+            <View style={styles.grid}>
+                <FlatList data={range} renderItem={(item) => <SemillaButton index={item.index} columnas={data?.bandeja.columnas} />} />
+            </View>
+            <AltaSemilla visible={altaSemillaVisible} close={() => toggleAltaSemilla(false)} />
+        </SafeAreaView >
     )
 }
 
@@ -83,20 +87,25 @@ const styles = StyleSheet.create({
     info: {
         backgroundColor: theme.dimmed,
         // paddingHorizontal: 8,
-        // paddingVertical: 2,
+        paddingVertical: 5,
         // paddingTop: 3.5,
-        padding: 5,
+        fontFamily: 'inter-med',
         paddingHorizontal: 10,
-        margin: 2.5,
-        borderRadius: 20,
+        borderRadius: 10,
+
         // borderWidth: 1,
-        borderColor:theme.primary,
-        color: theme.onDimmed,
+        color: theme.primary,
+        marginRight: 5,
     },
     grid: {
+        marginTop: 15,
         width: Dimensions.get('window').width,
         backgroundColor: '#eee',
         // borderRadius: 5,
         marginLeft: -20,
-    }
+        height: '100%',
+        borderTopWidth: 1,
+        borderColor: '#00000015',
+    },
+
 })

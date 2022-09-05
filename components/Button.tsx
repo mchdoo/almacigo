@@ -1,47 +1,44 @@
-import { StyleSheet, Text, Pressable, Dimensions, View } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, Dimensions, View } from 'react-native'
 import React from 'react'
-import {Ionicons} from '@expo/vector-icons'
+import { Ionicons } from '@expo/vector-icons'
 import { globalStyles } from '../styles/globals'
 import AnimatedLottieView from 'lottie-react-native'
+import * as Haptics from 'expo-haptics'
 
 const Button = ({
-    onPress = () => {}, 
-    color = 'black', 
-    text = 'Click', 
-    drop = false, 
-    icon = null, 
-    iconSize=20, 
-    loading = false, 
-    size = 60,
-    textButton = false
+    onPress = () => { },
+    color = 'black',
+    text = 'Click',
+    drop = false,
+    icon = null,
+    iconSize = 20,
+    loading = false,
+    textButton = false,
+    style = {}
 }) => {
-
-    const {width, height} = Dimensions.get('screen')
 
     const styles = StyleSheet.create({
         buttonBg: {
-            backgroundColor: !textButton ? color : '#eee',
+            backgroundColor: !textButton ? color : '#00000015',
             alignItems: 'center',
             justifyContent: 'center',
-            borderRadius: 10,
+            borderRadius: 50,
             position: drop ? 'absolute' : 'relative',
             width: '100%',
-            height: size,
-            bottom: 0,
+            paddingVertical: 10,
             margin: drop ? 20 : 0,
-
         },
         buttonText: {
             color: !textButton ? 'white' : color,
-            fontFamily: size > 50 ? 'inter-bold' : 'inter-med',
+            fontFamily: 'inter-med',
             marginRight: icon ? 5 : 0,
-            fontSize: size > 50 ? 16 : 12,
+            fontSize: 14,
         },
         loading: {
-            borderRadius: 10,
+            borderRadius: 50,
             alignItems: 'center',
             justifyContent: 'center',
-            height: size,
+            paddingVertical: 1,
             backgroundColor: 'lightgray',
         }
     })
@@ -52,12 +49,15 @@ const Button = ({
         </View>
     )
     return (
-        <Pressable style={styles.buttonBg} onPress={onPress}>
+        <TouchableOpacity style={[styles.buttonBg, style]} onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
+            onPress()
+        }}>
             <View style={globalStyles.row}>
                 <Text style={styles.buttonText} >{text}</Text>
                 {icon && <Ionicons name={icon} size={iconSize} color='white' />}
             </View>
-        </Pressable>
+        </TouchableOpacity>
     )
 }
 
